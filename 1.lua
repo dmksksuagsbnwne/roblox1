@@ -16,17 +16,15 @@ toggleButton.Text = "❤"
 toggleButton.TextScaled = true
 toggleButton.Font = Enum.Font.GothamBold
 toggleButton.TextColor3 = Color3.new(0, 0, 0)
-local corner = Instance.new("UICorner", toggleButton)
-corner.CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(1, 0)
 
 local menu = Instance.new("Frame", gui)
-menu.Size = UDim2.new(0, 240, 0, 180)
-menu.Position = UDim2.new(0, 70, 0.5, -90)
+menu.Size = UDim2.new(0, 280, 0, 210)
+menu.Position = UDim2.new(0, 70, 0.5, -105)
 menu.BackgroundColor3 = Color3.fromRGB(245, 245, 245)
 menu.BorderColor3 = Color3.fromRGB(0, 0, 0)
 menu.Visible = false
-local menuCorner = Instance.new("UICorner", menu)
-menuCorner.CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", menu).CornerRadius = UDim.new(0, 12)
 
 local resizeHandle = Instance.new("Frame", menu)
 resizeHandle.Size = UDim2.new(0, 20, 0, 20)
@@ -68,9 +66,20 @@ speedLabel.TextScaled = true
 speedLabel.Font = Enum.Font.Gotham
 speedLabel.TextColor3 = Color3.new(0, 0, 0)
 
+local speedInput = Instance.new("TextBox", menu)
+speedInput.Size = UDim2.new(0, 60, 0, 25)
+speedInput.Position = UDim2.new(0, 10, 0, 115)
+speedInput.Text = "16"
+speedInput.ClearTextOnFocus = false
+speedInput.Font = Enum.Font.Gotham
+speedInput.TextScaled = true
+speedInput.TextColor3 = Color3.new(0, 0, 0)
+speedInput.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+speedInput.BorderColor3 = Color3.fromRGB(0, 0, 0)
+
 local bar = Instance.new("Frame", menu)
-bar.Size = UDim2.new(1, -40, 0, 10)
-bar.Position = UDim2.new(0, 20, 0, 120)
+bar.Size = UDim2.new(1, -90, 0, 10)
+bar.Position = UDim2.new(0, 80, 0, 125)
 bar.BackgroundColor3 = Color3.fromRGB(210, 210, 210)
 bar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 
@@ -79,6 +88,30 @@ handle.Size = UDim2.new(0, 1, 1, 0)
 handle.BackgroundColor3 = Color3.new(1, 1, 1)
 handle.BorderColor3 = Color3.fromRGB(0, 0, 0)
 handle.Active = true
+
+local function setSpeed(value)
+	value = math.clamp(tonumber(value) or 16, 1, 999)
+	speedLabel.Text = "Speed: " .. value
+	speedInput.Text = tostring(value)
+	local c = player.Character
+	if c and c:FindFirstChild("Humanoid") then
+		c.Humanoid.WalkSpeed = value
+	end
+	local rel = value / 999
+	handle.Size = UDim2.new(rel, 0, 1, 0)
+end
+
+speedInput.FocusLost:Connect(function()
+	setSpeed(speedInput.Text)
+end)
+
+bar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		local rel = math.clamp((input.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+		local val = math.floor(1 + rel * 998)
+		setSpeed(val)
+	end
+end)
 
 local dragging = false
 handle.InputBegan:Connect(function(i)
@@ -91,13 +124,8 @@ end)
 UserInputService.InputChanged:Connect(function(i)
 	if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
 		local rel = math.clamp((i.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
-		handle.Size = UDim2.new(rel, 0, 1, 0)
-		local sp = math.floor(1 + rel * 499)
-		speedLabel.Text = "Speed: " .. sp
-		local char = player.Character
-		if char and char:FindFirstChild("Humanoid") then
-			char.Humanoid.WalkSpeed = sp
-		end
+		local val = math.floor(1 + rel * 998)
+		setSpeed(val)
 	end
 end)
 
@@ -119,7 +147,19 @@ end)
 RunService.Stepped:Connect(function()
 	if invBtn:GetAttribute("State") then
 		local h = player.Character and player.Character:FindFirstChild("Humanoid")
-		if h then h.Health = h.MaxHealth end
+		if h then
+			h.Health = h.MaxHealth
+			h:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+			if h.Health <= 0 then h.Health = h.MaxHealth end
+		end
+	end
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if root and root.Position.Y < workspace.FallenPartsDestroyHeight then
+		local h = player.Character:FindFirstChild("Humanoid")
+		if h then
+			h.Health = h.MaxHealth
+			root.CFrame = CFrame.new(0, 10, 0)
+		end
 	end
 end)
 
@@ -154,7 +194,7 @@ resizeHandle.InputBegan:Connect(function(input)
 		con = UserInputService.InputChanged:Connect(function(i)
 			if i.UserInputType == Enum.UserInputType.MouseMovement then
 				local diff = i.Position - startPos
-				menu.Size = UDim2.new(0, math.max(150, startSize.X.Offset + diff.X), 0, math.max(100, startSize.Y.Offset + diff.Y))
+				menu.Size = UDim2.new(0, math.max(200, startSize.X.Offset + diff.X), 0, math.max(150, startSize.Y.Offset + diff.Y))
 			end
 		end)
 		input.Changed:Connect(function()
