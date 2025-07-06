@@ -4,13 +4,13 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local Humanoid = nil
-local CurrentWalkSpeed = 16 -- Дефолтная скорость
+local CurrentWalkSpeed = 16
 local InfiniteJumpActive = false
 local GodModeActive = false
 local InfiniteJumpConnection = nil
 local GodModeConnection = nil
 
--- Функция для безопасного получения Humanoid
+-- Function to safely get the Humanoid
 local function GetHumanoid()
     if LocalPlayer and LocalPlayer.Character then
         return LocalPlayer.Character:FindFirstChild("Humanoid")
@@ -18,35 +18,38 @@ local function GetHumanoid()
     return nil
 end
 
--- --- Основной ScreenGui для меню ---
+-- --- Main ScreenGui for the menu ---
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AllInOneMenuGui"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+print("ScreenGui created and parented to PlayerGui.")
 
--- --- Главный фрейм меню ---
-local Frame = Instance.new("Frame")
-Frame.Name = "MainMenuFrame"
-Frame.Size = UDim2.new(0, 250, 0, 300)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -150)
-Frame.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15)
-Frame.BorderSizePixel = 2
-Frame.BorderColor3 = Color3.new(0.3, 0.3, 0.3)
-Frame.Draggable = true
-Frame.Parent = ScreenGui
+-- --- Main menu frame ---
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainMenuFrame"
+MainFrame.Size = UDim2.new(0, 250, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+MainFrame.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.new(0.3, 0.3, 0.3)
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+print("MainFrame created and parented to ScreenGui.")
 
--- --- Заголовок меню ---
-local Title = Instance.new("TextLabel")
-Title.Name = "TitleLabel"
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "Меню функций"
-Title.Font = Enum.Font.SourceSansBold
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.TextScaled = true
-Title.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-Title.Parent = Frame
+-- --- Menu title ---
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "TitleLabel"
+TitleLabel.Size = UDim2.new(1, 0, 0, 30)
+TitleLabel.Position = UDim2.new(0, 0, 0, 0)
+TitleLabel.Text = "Functions Menu"
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextColor3 = Color3.new(1, 1, 1)
+TitleLabel.TextScaled = true
+TitleLabel.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+TitleLabel.Parent = MainFrame
+print("TitleLabel created.")
 
--- --- Кнопка сворачивания меню ---
+-- --- Minimize button ---
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Size = UDim2.new(0.15, 0, 0, 25)
@@ -56,9 +59,10 @@ MinimizeButton.Font = Enum.Font.SourceSansBold
 MinimizeButton.TextColor3 = Color3.new(1, 1, 1)
 MinimizeButton.TextScaled = true
 MinimizeButton.BackgroundColor3 = Color3.new(0.8, 0.2, 0.2)
-MinimizeButton.Parent = Frame
+MinimizeButton.Parent = MainFrame
+print("MinimizeButton created.")
 
--- --- Иконка для свернутого состояния ---
+-- --- Minimized icon (heart) ---
 local MinimizedIcon = Instance.new("TextButton")
 MinimizedIcon.Name = "MinimizedHeartIcon"
 MinimizedIcon.Size = UDim2.new(0, 50, 0, 50)
@@ -74,29 +78,30 @@ MinimizedIcon.ZIndex = 10
 MinimizedIcon.BackgroundTransparency = 0
 MinimizedIcon.Parent = ScreenGui
 MinimizedIcon.Visible = false
-
--- Закругление углов иконки (для круглого вида, если эксплойтер поддерживает)
 MinimizedIcon.CornerRadius = UDim.new(0.5, 0)
+print("MinimizedIcon created.")
 
--- --- Функции показа/скрытия меню и иконки ---
+-- --- Show/Hide menu functions ---
 local function ShowMenu()
-    Frame.Visible = true
+    MainFrame.Visible = true
     MinimizedIcon.Visible = false
-    ScreenGui.Enabled = true
+    print("Menu shown.")
 end
 
 local function HideMenu()
-    Frame.Visible = false
+    MainFrame.Visible = false
     MinimizedIcon.Visible = true
-end
+    print("Menu hidden, icon shown.")
+}
 
--- --- Логика переключателей (Toggle Buttons) ---
+-- --- Toggle Button Creator ---
 local function CreateToggle(name, yOffset, onColor, offColor, defaultState, onToggleFunc)
     local Container = Instance.new("Frame")
     Container.Size = UDim2.new(0.9, 0, 0, 40)
     Container.Position = UDim2.new(0.05, 0, 0, 40 + yOffset)
     Container.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-    Container.Parent = Frame -- <--- Убеждаемся, что родитель установлен
+    Container.Parent = MainFrame
+    print("Toggle Container for " .. name .. " created.")
 
     local Label = Instance.new("TextLabel")
     Label.Size = UDim2.new(0.7, 0, 1, 0)
@@ -107,7 +112,8 @@ local function CreateToggle(name, yOffset, onColor, offColor, defaultState, onTo
     Label.TextScaled = true
     Label.TextXAlignment = Enum.TextXAlignment.Left
     Label.TextWrapped = true
-    Label.Parent = Container -- <--- Убеждаемся, что родитель установлен
+    Label.Parent = Container
+    print("Label for " .. name .. " created.")
 
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Size = UDim2.new(0.25, 0, 0.8, 0)
@@ -115,16 +121,17 @@ local function CreateToggle(name, yOffset, onColor, offColor, defaultState, onTo
     ToggleButton.Font = Enum.Font.SourceSansBold
     ToggleButton.TextColor3 = Color3.new(1, 1, 1)
     ToggleButton.TextScaled = true
-    ToggleButton.Parent = Container -- <--- Убеждаемся, что родитель установлен
+    ToggleButton.Parent = Container
+    print("ToggleButton for " .. name .. " created.")
 
     local currentState = defaultState
     local function UpdateToggleState()
         if currentState then
             ToggleButton.BackgroundColor3 = onColor
-            ToggleButton.Text = "ВКЛ"
+            ToggleButton.Text = "ON"
         else
             ToggleButton.BackgroundColor3 = offColor
-            ToggleButton.Text = "ВЫКЛ"
+            ToggleButton.Text = "OFF"
         end
         onToggleFunc(currentState)
     end
@@ -134,17 +141,18 @@ local function CreateToggle(name, yOffset, onColor, offColor, defaultState, onTo
         UpdateToggleState()
     end)
 
-    UpdateToggleState() -- Инициализируем состояние кнопки
+    UpdateToggleState()
     return ToggleButton, function(newState) currentState = newState UpdateToggleState() end
 end
 
--- --- Логика слайдера (ползунка) ---
+-- --- Slider Creator ---
 local function CreateSlider(name, yOffset, minVal, maxVal, defaultVal, onValueChangedFunc)
     local Container = Instance.new("Frame")
     Container.Size = UDim2.new(0.9, 0, 0, 50)
     Container.Position = UDim2.new(0.05, 0, 0, 40 + yOffset)
     Container.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-    Container.Parent = Frame -- <--- Убеждаемся, что родитель установлен
+    Container.Parent = MainFrame
+    print("Slider Container for " .. name .. " created.")
 
     local Label = Instance.new("TextLabel")
     Label.Size = UDim2.new(1, 0, 0.4, 0)
@@ -154,20 +162,23 @@ local function CreateSlider(name, yOffset, minVal, maxVal, defaultVal, onValueCh
     Label.TextColor3 = Color3.new(1, 1, 1)
     Label.TextScaled = true
     Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = Container -- <--- Убеждаемся, что родитель установлен
+    Label.Parent = Container
+    print("Slider Label for " .. name .. " created.")
 
-    local Slider = Instance.new("Frame")
-    Slider.Size = UDim2.new(1, 0, 0.4, 0)
-    Slider.Position = UDim2.new(0, 0, 0.6, 0)
-    Slider.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
-    Slider.BorderSizePixel = 1
-    Slider.BorderColor3 = Color3.new(0.1, 0.1, 0.1)
-    Slider.Parent = Container -- <--- Убеждаемся, что родитель установлен
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Size = UDim2.new(1, 0, 0.4, 0)
+    SliderFrame.Position = UDim2.new(0, 0, 0.6, 0)
+    SliderFrame.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+    SliderFrame.BorderSizePixel = 1
+    SliderFrame.BorderColor3 = Color3.new(0.1, 0.1, 0.1)
+    SliderFrame.Parent = Container
+    print("SliderFrame for " .. name .. " created.")
 
     local Handle = Instance.new("TextButton")
     Handle.Size = UDim2.new(0, 15, 1, 0)
     Handle.BackgroundColor3 = Color3.new(0.3, 0.5, 0.7)
-    Handle.Parent = Slider -- <--- Убеждаемся, что родитель установлен
+    Handle.Parent = SliderFrame
+    print("Slider Handle for " .. name .. " created.")
 
     local isDragging = false
     local currentValue = defaultVal
@@ -185,8 +196,8 @@ local function CreateSlider(name, yOffset, minVal, maxVal, defaultVal, onValueCh
 
     mouse.Move:Connect(function()
         if isDragging then
-            local mouseX = math.clamp(mouse.X - Slider.AbsolutePosition.X, 0, Slider.AbsoluteSize.X)
-            local ratio = mouseX / Slider.AbsoluteSize.X
+            local mouseX = math.clamp(mouse.X - SliderFrame.AbsolutePosition.X, 0, SliderFrame.AbsoluteSize.X)
+            local ratio = mouseX / SliderFrame.AbsoluteSize.X
             currentValue = math.floor(minVal + (maxVal - minVal) * ratio)
             Handle.Position = UDim2.new(ratio, 0, 0, 0)
             Label.Text = name .. ": " .. currentValue
@@ -202,11 +213,11 @@ local function CreateSlider(name, yOffset, minVal, maxVal, defaultVal, onValueCh
         onValueChangedFunc(currentValue)
     end
 
-    SetSliderValue(defaultVal) -- Инициализируем значение слайдера
+    SetSliderValue(defaultVal)
     return SetSliderValue
 end
 
--- --- Функции активации/деактивации читов ---
+-- --- Cheat Activation/Deactivation Functions ---
 local function OnInfiniteJumpToggle(active)
     InfiniteJumpActive = active
     if InfiniteJumpConnection then
@@ -222,8 +233,9 @@ local function OnInfiniteJumpToggle(active)
                     Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                 end
             end
-        })
+        end)
     end
+    print("Infinite Jump: " .. (active and "ON" or "OFF"))
 end
 
 local function OnGodModeToggle(active)
@@ -234,41 +246,44 @@ local function OnGodModeToggle(active)
     end
 
     if GodModeActive then
-        -- Подключаем Heartbeat только когда Humanoid существует
         GodModeConnection = RunService.Heartbeat:Connect(function()
-            Humanoid = GetHumanoid() -- Получаем Humanoid каждый тик, на случай возрождения
+            Humanoid = GetHumanoid()
             if Humanoid and Humanoid.Health < Humanoid.MaxHealth then
                 Humanoid.Health = Humanoid.MaxHealth
             end
         end)
     end
+    print("God Mode: " .. (active and "ON" or "OFF"))
 end
 
-local function OnSpeedSliderChange(value)
+local function OnWalkSpeedChange(value)
     CurrentWalkSpeed = value
     Humanoid = GetHumanoid()
     if Humanoid then
         Humanoid.WalkSpeed = CurrentWalkSpeed
     end
+    print("WalkSpeed set to: " .. value)
 end
 
--- --- Создание элементов управления (вызываются здесь, чтобы гарантировать создание) ---
-local infiniteJumpToggle, setInfiniteJumpToggle = CreateToggle("Бесконечный прыжок", 0, Color3.new(0.2, 0.7, 0.2), Color3.new(0.7, 0.2, 0.2), false, OnInfiniteJumpToggle)
-local godModeToggle, setGodModeToggle = CreateToggle("Бессмертие", 50, Color3.new(0.2, 0.7, 0.2), Color3.new(0.7, 0.2, 0.2), false, OnGodModeToggle)
-local speedSliderSetter = CreateSlider("Скорость", 100, 1, 500, 16, OnSpeedSliderChange)
+-- --- Create UI elements ---
+-- The yOffset parameter is the vertical position relative to the top of the menu frame.
+-- Each item adds about 50 units (40 for toggle/50 for slider + padding)
+local _, setInfiniteJumpToggle = CreateToggle("Infinite Jump", 0, Color3.new(0.2, 0.7, 0.2), Color3.new(0.7, 0.2, 0.2), false, OnInfiniteJumpToggle)
+local _, setGodModeToggle = CreateToggle("God Mode", 50, Color3.new(0.2, 0.7, 0.2), Color3.new(0.7, 0.2, 0.2), false, OnGodModeToggle)
+local setSpeedSliderValue = CreateSlider("WalkSpeed", 100, 1, 500, 16, OnWalkSpeedChange)
 
--- --- Обработчики кнопок и клавиш ---
+-- --- Event Handlers ---
 MinimizeButton.MouseButton1Click:Connect(function()
     HideMenu()
-end)
+})
 
 MinimizedIcon.MouseButton1Click:Connect(function()
     ShowMenu()
-end)
+})
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     if input.KeyCode == Enum.KeyCode.Z and not gameProcessedEvent then
-        if Frame.Visible then
+        if MainFrame.Visible then
             HideMenu()
         else
             ShowMenu()
@@ -276,25 +291,25 @@ UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     end
 end)
 
--- --- Инициализация при первом запуске скрипта ---
--- Обновляем Humanoid и скорость при загрузке персонажа и при каждом его возрождении
+-- --- Initialization on script start and character spawn ---
 LocalPlayer.CharacterAdded:Connect(function(char)
     Humanoid = char:WaitForChild("Humanoid")
     CurrentWalkSpeed = Humanoid.WalkSpeed
-    speedSliderSetter(CurrentWalkSpeed)
-    -- Если GodMode был активен, переподключаем его на новый Humanoid
+    setSpeedSliderValue(CurrentWalkSpeed) -- Update slider with current speed
     if GodModeActive then
-        OnGodModeToggle(true) -- Повторно активируем, чтобы подключить новый Humanoid
+        OnGodModeToggle(true) -- Re-activate God Mode for new Humanoid
     end
-end)
+    print("Character spawned, Humanoid initialized.")
+})
 
--- Если персонаж уже загружен при старте скрипта, инициализируем Humanoid и скорость
+-- Initial setup if character already loaded
 if LocalPlayer.Character then
     Humanoid = GetHumanoid()
     if Humanoid then
         CurrentWalkSpeed = Humanoid.WalkSpeed
-        speedSliderSetter(CurrentWalkSpeed)
+        setSpeedSliderValue(CurrentWalkSpeed)
     end
 end
 
-print("Скрипт меню функций загружен. Нажмите 'Z' для отображения/скрытия меню.")
+print("Functions Menu script loaded. Press 'Z' to toggle visibility.")
+print("If the menu is empty, check the console for errors and ensure the script is loaded properly.")
