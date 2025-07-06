@@ -1,70 +1,102 @@
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
+-- Удалим старый GUI, если есть
+if game.Players.LocalPlayer:FindFirstChild("PlayerGui"):FindFirstChild("CustomMenu") then
+	game.Players.LocalPlayer.PlayerGui.CustomMenu:Destroy()
+end
 
-local neonColor = Color3.fromRGB(0, 178, 255)
-
+local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "CustomMenu"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 
-local toggleButton = Instance.new("TextButton", gui)
-toggleButton.Size = UDim2.new(0, 50, 0, 50)
-toggleButton.Position = UDim2.new(1, -60, 0.5, -25)
-toggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-toggleButton.BorderColor3 = neonColor
-toggleButton.Text = "1"
-toggleButton.TextScaled = true
-toggleButton.Font = Enum.Font.GothamBlack
-toggleButton.TextColor3 = neonColor
-toggleButton.Name = "ToggleButton"
-Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(1, 0)
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
 
+local neonColor = Color3.fromRGB(0, 178, 255)
+local darkColor = Color3.fromRGB(20, 20, 20)
+
+-- Кнопка-значок
+local icon = Instance.new("TextButton", gui)
+icon.Size = UDim2.new(0, 50, 0, 50)
+icon.Position = UDim2.new(1, -60, 0.5, -25)
+icon.Text = "1"
+icon.TextColor3 = neonColor
+icon.BackgroundColor3 = darkColor
+icon.BorderColor3 = neonColor
+icon.Font = Enum.Font.GothamBlack
+icon.TextScaled = true
+Instance.new("UICorner", icon).CornerRadius = UDim.new(1, 0)
+
+-- Главное меню
 local menu = Instance.new("Frame", gui)
-menu.Size = UDim2.new(0, 300, 0, 250)
-menu.Position = UDim2.new(0.5, -150, 0.5, -125) -- теперь по центру
-menu.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-menu.BackgroundTransparency = 0.25
+menu.Size = UDim2.new(0, 320, 0, 270)
+menu.Position = icon.Position
+menu.BackgroundColor3 = darkColor
+menu.BackgroundTransparency = 0.15
 menu.BorderColor3 = neonColor
 menu.Visible = false
-menu.Name = "MainMenu"
 menu.Active = true
-menu.Draggable = false
 Instance.new("UICorner", menu).CornerRadius = UDim.new(0, 12)
 
+-- Перетаскивание меню
 local draggingMenu = false
-local dragOffset
+local offsetMenu = Vector2.zero
 
 menu.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 and not draggingMenu then
-		local mousePos = input.Position
-		local barAbsPos = menu:FindFirstChild("SpeedBar") and menu.SpeedBar.AbsolutePosition
-		local barSize = menu:FindFirstChild("SpeedBar") and menu.SpeedBar.AbsoluteSize
-
-		if not barAbsPos or not (mousePos.X >= barAbsPos.X and mousePos.X <= barAbsPos.X + barSize.X
-			and mousePos.Y >= barAbsPos.Y and mousePos.Y <= barAbsPos.Y + barSize.Y) then
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		local mouse = input.Position
+		local bar = menu:FindFirstChild("SpeedBar")
+		if not (bar and mouse.X >= bar.AbsolutePosition.X and mouse.X <= bar.AbsolutePosition.X + bar.AbsoluteSize.X
+			and mouse.Y >= bar.AbsolutePosition.Y and mouse.Y <= bar.AbsolutePosition.Y + bar.AbsoluteSize.Y) then
 			draggingMenu = true
-			dragOffset = Vector2.new(input.Position.X - menu.AbsolutePosition.X, input.Position.Y - menu.AbsolutePosition.Y)
+			offsetMenu = mouse - menu.AbsolutePosition
 		end
 	end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-	if draggingMenu and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local newPos = input.Position - dragOffset
-		menu.Position = UDim2.new(0, newPos.X, 0, newPos.Y)
-	end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
+UIS.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		draggingMenu = false
 	end
 end)
 
-local function makeToggle(name, y)
+UIS.InputChanged:Connect(function(input)
+	if draggingMenu and input.UserInputType == Enum.UserInputType.MouseMovement then
+		menu.Position = UDim2.new(0, input.Position.X - offsetMenu.X, 0, input.Position.Y - offsetMenu.Y)
+	end
+end)
+
+-- Перетаскивание значка
+local draggingIcon = false
+local offsetIcon = Vector2.zero
+
+icon.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingIcon = true
+		offsetIcon = input.Position - icon.AbsolutePosition
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingIcon = false
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if draggingIcon and input.UserInputType == Enum.UserInputType.MouseMovement then
+		icon.Position = UDim2.new(0, input.Position.X - offsetIcon.X, 0, input.Position.Y - offsetIcon.Y)
+	end
+end)
+
+-- Переключение
+icon.MouseButton1Click:Connect(function()
+	menu.Position = icon.Position
+	icon.Visible = false
+	menu.Visible = true
+end)
+
+local function makeButton(name, y)
 	local btn = Instance.new("TextButton", menu)
 	btn.Size = UDim2.new(1, -20, 0, 30)
 	btn.Position = UDim2.new(0, 10, 0, y)
@@ -83,8 +115,8 @@ local function makeToggle(name, y)
 	return btn
 end
 
-local infJumpBtn = makeToggle("Infinite Jump", 10)
-local invBtn = makeToggle("God Mode", 50)
+local infJumpBtn = makeButton("Infinite Jump", 10)
+local godBtn = makeButton("God Mode", 50)
 
 local speedLabel = Instance.new("TextLabel", menu)
 speedLabel.Size = UDim2.new(1, -20, 0, 20)
@@ -114,7 +146,7 @@ bar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 bar.BorderColor3 = neonColor
 
 local handle = Instance.new("Frame", bar)
-handle.Size = UDim2.new(0, 1, 1, 0)
+handle.Size = UDim2.new(0.016, 0, 1, 0)
 handle.BackgroundColor3 = neonColor
 handle.BorderColor3 = neonColor
 handle.Active = true
@@ -141,91 +173,62 @@ bar.InputBegan:Connect(function(input)
 	end
 end)
 
-local dragging = false
+local draggingHandle = false
 handle.InputBegan:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
+	if i.UserInputType == Enum.UserInputType.MouseButton1 then draggingHandle = true end
 end)
 handle.InputEnded:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+	if i.UserInputType == Enum.UserInputType.MouseButton1 then draggingHandle = false end
 end)
-
-UserInputService.InputChanged:Connect(function(i)
-	if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+UIS.InputChanged:Connect(function(i)
+	if draggingHandle and i.UserInputType == Enum.UserInputType.MouseMovement then
 		local rel = math.clamp((i.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
 		setSpeed(math.floor(1 + rel * 998))
 	end
 end)
 
-toggleButton.MouseButton1Click:Connect(function()
-	menu.Position = toggleButton.Position
-	menu.Visible = true
-	toggleButton.Visible = false
-end)
-
-local function makeDraggable(frame)
-	local dragging, dragInput, dragStart, startPos
-	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
-			end)
-		end
-	end)
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local delta = input.Position - dragStart
-			frame.Position = startPos + UDim2.new(0, delta.X, 0, delta.Y)
-		end
-	end)
-end
-
-makeDraggable(toggleButton)
-
-local closeButton = Instance.new("TextButton", menu)
-closeButton.Size = UDim2.new(0, 25, 0, 25)
-closeButton.Position = UDim2.new(1, -30, 0, 5)
-closeButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-closeButton.BorderColor3 = neonColor
-closeButton.Text = "X"
-closeButton.TextColor3 = neonColor
-closeButton.Font = Enum.Font.GothamBold
-closeButton.TextScaled = true
-Instance.new("UICorner", closeButton).CornerRadius = UDim.new(1, 0)
-closeButton.MouseButton1Click:Connect(function()
+-- Кнопка закрытия
+local close = Instance.new("TextButton", menu)
+close.Size = UDim2.new(0, 25, 0, 25)
+close.Position = UDim2.new(1, -30, 0, 5)
+close.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+close.BorderColor3 = neonColor
+close.Text = "X"
+close.TextColor3 = neonColor
+close.Font = Enum.Font.GothamBold
+close.TextScaled = true
+Instance.new("UICorner", close).CornerRadius = UDim.new(1, 0)
+close.MouseButton1Click:Connect(function()
 	menu.Visible = false
-	toggleButton.Position = menu.Position
-	toggleButton.Visible = true
+	icon.Position = menu.Position
+	icon.Visible = true
 end)
 
-UserInputService.JumpRequest:Connect(function()
+-- Инф. прыжок
+UIS.JumpRequest:Connect(function()
 	if infJumpBtn:GetAttribute("State") then
 		local h = player.Character and player.Character:FindFirstChild("Humanoid")
 		if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end
 	end
 end)
 
-RunService.Stepped:Connect(function()
-	if invBtn:GetAttribute("State") then
-		local h = player.Character and player.Character:FindFirstChild("Humanoid")
-		if h then
-			h.Health = h.MaxHealth
-			h:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-			if h.Health <= 0 then h.Health = h.MaxHealth end
-		end
+-- Год-мод + защита от бездны
+RS.Stepped:Connect(function()
+	local char = player.Character
+	if not char then return end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if godBtn:GetAttribute("State") and hum then
+		hum.Health = hum.MaxHealth
+		hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
 	end
-	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if root and root.Position.Y < workspace.FallenPartsDestroyHeight then
-		local h = player.Character:FindFirstChild("Humanoid")
-		if h then
-			h.Health = h.MaxHealth
-			root.CFrame = CFrame.new(0, 10, 0)
-		end
+		root.CFrame = CFrame.new(0, 10, 0)
+		if hum then hum.Health = hum.MaxHealth end
 	end
 end)
 
+-- Установка стандартной скорости при спавне
 player.CharacterAdded:Connect(function(c)
 	c:WaitForChild("Humanoid").WalkSpeed = 16
 end)
