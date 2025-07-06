@@ -52,7 +52,7 @@ local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Size = UDim2.new(0.15, 0, 0, 25)
 MinimizeButton.Position = UDim2.new(0.83, 0, 0, 5)
-MinimizeButton.Text = "-" -- Теперь это кнопка сворачивания
+MinimizeButton.Text = "-"
 MinimizeButton.Font = Enum.Font.SourceSansBold
 MinimizeButton.TextColor3 = Color3.new(1, 1, 1)
 MinimizeButton.TextScaled = true
@@ -63,29 +63,26 @@ MinimizeButton.Parent = Frame
 local MinimizedIcon = Instance.new("TextButton")
 MinimizedIcon.Name = "MinimizedHeartIcon"
 MinimizedIcon.Size = UDim2.new(0, 50, 0, 50)
-MinimizedIcon.Position = UDim2.new(0, 10, 0, 10) -- Положение иконки
-MinimizedIcon.BackgroundColor3 = Color3.new(1, 1, 1) -- Белый фон
-MinimizedIcon.BorderColor3 = Color3.new(0, 0, 0) -- Черная обводка
+MinimizedIcon.Position = UDim2.new(0, 10, 0, 10)
+MinimizedIcon.BackgroundColor3 = Color3.new(1, 1, 1)
+MinimizedIcon.BorderColor3 = Color3.new(0, 0, 0)
 MinimizedIcon.BorderSizePixel = 2
-MinimizedIcon.Text = "❤" -- Сердечко (или любой другой символ)
+MinimizedIcon.Text = "❤"
 MinimizedIcon.Font = Enum.Font.SourceSansBold
-MinimizedIcon.TextColor3 = Color3.new(0.8, 0.2, 0.2) -- Красное сердечко
+MinimizedIcon.TextColor3 = Color3.new(0.8, 0.2, 0.2)
 MinimizedIcon.TextScaled = true
-MinimizedIcon.ZIndex = 10 -- Убедимся, что иконка поверх других UI
+MinimizedIcon.ZIndex = 10
 MinimizedIcon.BackgroundTransparency = 0
 MinimizedIcon.Parent = ScreenGui
-MinimizedIcon.Visible = false -- Сначала скрыта
+MinimizedIcon.Visible = false
 
--- Сделаем иконку круглой (работает только в Roblox Studio или с UI-плагинами,
--- но для эксплойтера это будет просто квадрат с закруглением, если поддерживается)
-MinimizedIcon.BackgroundTransparency = 0
-MinimizedIcon.CornerRadius = UDim.new(0.5, 0) -- Закругляем углы на 50%
+MinimizedIcon.CornerRadius = UDim.new(0.5, 0)
 
 -- --- Функции показа/скрытия меню и иконки ---
 local function ShowMenu()
     Frame.Visible = true
     MinimizedIcon.Visible = false
-    ScreenGui.Enabled = true -- Включаем ScreenGui, если был выключен
+    ScreenGui.Enabled = true
 end
 
 local function HideMenu()
@@ -308,3 +305,4 @@ if LocalPlayer.Character then
         speedSliderSetter(CurrentWalkSpeed)
     end
 end
+
