@@ -23,14 +23,46 @@ toggleButton.Name = "ToggleButton"
 Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(1, 0)
 
 local menu = Instance.new("Frame", gui)
-menu.Size = UDim2.new(0, 300, 0, 230)
-menu.Position = toggleButton.Position
+menu.Size = UDim2.new(0, 300, 0, 250)
+menu.Position = UDim2.new(0.5, -150, 0.5, -125) -- теперь по центру
 menu.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 menu.BackgroundTransparency = 0.25
 menu.BorderColor3 = neonColor
 menu.Visible = false
 menu.Name = "MainMenu"
+menu.Active = true
+menu.Draggable = false
 Instance.new("UICorner", menu).CornerRadius = UDim.new(0, 12)
+
+local draggingMenu = false
+local dragOffset
+
+menu.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 and not draggingMenu then
+		local mousePos = input.Position
+		local barAbsPos = menu:FindFirstChild("SpeedBar") and menu.SpeedBar.AbsolutePosition
+		local barSize = menu:FindFirstChild("SpeedBar") and menu.SpeedBar.AbsoluteSize
+
+		if not barAbsPos or not (mousePos.X >= barAbsPos.X and mousePos.X <= barAbsPos.X + barSize.X
+			and mousePos.Y >= barAbsPos.Y and mousePos.Y <= barAbsPos.Y + barSize.Y) then
+			draggingMenu = true
+			dragOffset = Vector2.new(input.Position.X - menu.AbsolutePosition.X, input.Position.Y - menu.AbsolutePosition.Y)
+		end
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if draggingMenu and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local newPos = input.Position - dragOffset
+		menu.Position = UDim2.new(0, newPos.X, 0, newPos.Y)
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingMenu = false
+	end
+end)
 
 local function makeToggle(name, y)
 	local btn = Instance.new("TextButton", menu)
@@ -75,6 +107,7 @@ speedInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 speedInput.BorderColor3 = neonColor
 
 local bar = Instance.new("Frame", menu)
+bar.Name = "SpeedBar"
 bar.Size = UDim2.new(1, -90, 0, 10)
 bar.Position = UDim2.new(0, 80, 0, 125)
 bar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -149,7 +182,6 @@ local function makeDraggable(frame)
 	end)
 end
 
-makeDraggable(menu)
 makeDraggable(toggleButton)
 
 local closeButton = Instance.new("TextButton", menu)
