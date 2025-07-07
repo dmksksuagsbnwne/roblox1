@@ -3,184 +3,209 @@ local UIS = game:GetService("UserInputService")
 local RS = game:GetService("RunService")
 local TS = game:GetService("TeleportService")
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "CustomMenu"; gui.IgnoreGuiInset = true; gui.ResetOnSpawn = false
+gui.Name = "CustomMenu"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
 
-local neonColor = Color3.fromRGB(0,178,255)
-local darkColor = Color3.fromRGB(20,20,20)
-
+local neon, dark = Color3.fromRGB(0,178,255), Color3.fromRGB(20,20,20)
+local MAX_SPEED = 250
 local function center(w,h)
-	local vp = workspace.CurrentCamera.ViewportSize
-	return UDim2.new(0,(vp.X-w)/2,0,(vp.Y-h)/2)
+    local v = workspace.CurrentCamera.ViewportSize
+    return UDim2.new(0, (v.X - w)/2, 0, (v.Y - h)/2)
 end
 
-local settings = {
-	speed = 16,
-	speedEnabled = true,
-	infJump = false,
-	god = false,
-	noclip = false,
-}
-
-local joinData = TS:GetTeleportData()
-if type(joinData)=="table" then
-	for k,v in pairs(joinData) do settings[k]=v end
+local settings = { speed = 16, speedEnabled = true, infJump = false, god = false, noclip = false }
+local data = TS:GetTeleportData()
+if typeof(data) == "table" then
+    for k,v in pairs(data) do if settings[k] ~= nil then settings[k] = v end end
 end
 
-local icon = Instance.new("TextButton",gui)
-icon.Size=UDim2.new(0,50,0,50)
-icon.Position=UDim2.new(1,-60,0.5,-25)
-icon.AutoButtonColor=true; icon.Text="1"; icon.Font=Enum.Font.GothamBold
-icon.TextScaled=true; icon.TextColor3=neonColor
-icon.BackgroundColor3=Color3.new(1,1,1); icon.BorderColor3=Color3.new(0,0,0)
-Instance.new("UICorner",icon).CornerRadius=UDim.new(1,0)
+-- Icon
+local icon = Instance.new("TextButton", gui)
+icon.Size = UDim2.new(0,50,0,50)
+icon.Position = UDim2.new(1,-60,0.5,-25)
+icon.Text = "1"
+icon.Font = Enum.Font.GothamBold
+icon.TextScaled = true
+icon.TextColor3 = neon
+icon.BackgroundColor3 = dark
+Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
 
-local menu = Instance.new("Frame",gui)
-menu.Size=UDim2.new(0,340,0,370)
-menu.Position=center(340,370)
-menu.BackgroundColor3=darkColor; menu.BackgroundTransparency=0.25
-menu.BorderColor3=neonColor; menu.Visible=false; menu.Active=true
-Instance.new("UICorner",menu).CornerRadius=UDim.new(0,12)
+-- Menu
+local menu = Instance.new("Frame", gui)
+menu.Size = UDim2.new(0,340,0,380)
+menu.Position = center(340,380)
+menu.BackgroundColor3 = dark
+menu.BackgroundTransparency = 0.25
+menu.BorderColor3 = neon
+menu.Visible = false
+menu.Active = true
+Instance.new("UICorner", menu).CornerRadius = UDim.new(0,12)
 
-local title=Instance.new("TextLabel",menu)
-title.Size=UDim2.new(1,-20,0,35); title.Position=UDim2.new(0,10,0,10)
-title.BackgroundTransparency=1; title.Text="Custom Menu"
-title.TextColor3=neonColor; title.Font=Enum.Font.GothamBold
-title.TextScaled=true; title.TextXAlignment=Enum.TextXAlignment.Left
-
-local closeBtn=Instance.new("TextButton",menu)
-closeBtn.Size=UDim2.new(0,28,0,28); closeBtn.Position=UDim2.new(1,-38,0,10)
-closeBtn.Text="X"; closeBtn.BackgroundColor3=Color3.fromRGB(40,40,40)
-closeBtn.TextColor3=neonColor; closeBtn.Font=Enum.Font.GothamBold
-closeBtn.TextScaled=true; closeBtn.BorderColor3=neonColor
-Instance.new("UICorner",closeBtn).CornerRadius=UDim.new(1,0)
-
-local function makeToggle(name,y,key)
-	local btn=Instance.new("TextButton",menu)
-	btn.Size=UDim2.new(1,-20,0,35); btn.Position=UDim2.new(0,10,0,y)
-	btn.BackgroundColor3=Color3.fromRGB(30,30,30); btn.BorderColor3=neonColor
-	btn.Text=name..": "..(settings[key] and "ON" or "OFF")
-	btn.Font=Enum.Font.Gotham; btn.TextColor3=neonColor; btn.TextScaled=true
-	btn.AutoButtonColor=false
-	btn.MouseButton1Click:Connect(function()
-		settings[key] = not settings[key]
-		btn.Text = name..": "..(settings[key] and "ON" or "OFF")
-	end)
-	return btn
+local function newLabel(text, pos)
+    local l = Instance.new("TextLabel", menu)
+    l.Size = UDim2.new(1,-20,0,30)
+    l.Position = UDim2.new(0,10,0,pos)
+    l.BackgroundTransparency = 1
+    l.Text = text
+    l.TextColor3 = neon
+    l.Font = Enum.Font.Gotham
+    l.TextScaled = true
+    return l
 end
 
-local infBtn = makeToggle("Infinite Jump",60,"infJump")
-local godBtn = makeToggle("God Mode",100,"god")
-local noclipBtn = makeToggle("Noclip",140,"noclip")
-local speedBtn = makeToggle("Enable Speed",180,"speedEnabled")
+local function newToggle(text, pos, key)
+    local b = Instance.new("TextButton", menu)
+    b.Size = UDim2.new(1,-20,0,35)
+    b.Position = UDim2.new(0,10,0,pos)
+    b.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    b.BorderColor3 = neon
+    b.Text = text .. ": " .. (settings[key] and "ON" or "OFF")
+    b.Font = Enum.Font.Gotham
+    b.TextColor3 = neon
+    b.TextScaled = true
+    b.AutoButtonColor = false
+    b.MouseButton1Click:Connect(function()
+        settings[key] = not settings[key]
+        b.Text = text .. ": " .. (settings[key] and "ON" or "OFF")
+    end)
+    return b
+end
 
-local speedLabel=Instance.new("TextLabel",menu)
-speedLabel.Size=UDim2.new(1,-20,0,25); speedLabel.Position=UDim2.new(0,10,0,220)
-speedLabel.BackgroundTransparency=1; speedLabel.TextColor3=neonColor
-speedLabel.Font=Enum.Font.Gotham; speedLabel.TextScaled=true
-speedLabel.TextXAlignment=Enum.TextXAlignment.Left
+local title = newLabel("Custom Menu", 10)
+title.Font = Enum.Font.GothamBlack
+local close = Instance.new("TextButton", menu)
+close.Size = UDim2.new(0,28,0,28)
+close.Position = UDim2.new(1,-38,0,10)
+close.Text = "X"
+close.TextColor3 = neon
+close.Font = Enum.Font.GothamBold
+close.TextScaled = true
+close.BackgroundColor3 = Color3.fromRGB(40,40,40)
+close.BorderColor3 = neon
+Instance.new("UICorner", close).CornerRadius = UDim.new(1,0)
 
-local speedInput=Instance.new("TextBox",menu)
-speedInput.Size=UDim2.new(0,60,0,30); speedInput.Position=UDim2.new(0,10,0,250)
-speedInput.BackgroundColor3=Color3.fromRGB(30,30,30); speedInput.TextColor3=neonColor
-speedInput.Font=Enum.Font.Gotham; speedInput.TextScaled=true
-speedInput.ClearTextOnFocus=false; speedInput.BorderColor3=neonColor
+local infB = newToggle("Infinite Jump", 60, "infJump")
+local godB = newToggle("God Mode", 100, "god")
+local noclipB = newToggle("Noclip", 140, "noclip")
+local speedB = newToggle("Enable Speed", 180, "speedEnabled")
+local speedLbl = newLabel("Speed: " .. settings.speed, 220)
+local speedInput = Instance.new("TextBox", menu)
+speedInput.Size = UDim2.new(0,60,0,30)
+speedInput.Position = UDim2.new(0,10,0,260)
+speedInput.BackgroundColor3 = Color3.fromRGB(30,30,30)
+speedInput.TextColor3 = neon
+speedInput.Text = tostring(settings.speed)
+speedInput.Font = Enum.Font.Gotham
+speedInput.TextScaled = true
+speedInput.ClearTextOnFocus = false
+speedInput.BorderColor3 = neon
 
-local bar=Instance.new("Frame",menu)
-bar.Name="SpeedBar"; bar.Size=UDim2.new(1,-90,0,20); bar.Position=UDim2.new(0,80,0,260)
-bar.BackgroundColor3=Color3.fromRGB(40,40,40); bar.BorderColor3=neonColor
-Instance.new("UICorner",bar).CornerRadius=UDim.new(0,10)
+local bar = Instance.new("Frame", menu)
+bar.Size = UDim2.new(1,-90,0,20)
+bar.Position = UDim2.new(0,80,0,270)
+bar.BackgroundColor3 = Color3.fromRGB(40,40,40)
+bar.BorderColor3 = neon
+Instance.new("UICorner", bar).CornerRadius = UDim.new(0,10)
 
-local handle=Instance.new("Frame",bar)
-handle.Size=UDim2.new(settings.speed/250,0,1,0)
-handle.BackgroundColor3=neonColor; handle.BorderColor3=neonColor; handle.Active=true
-Instance.new("UICorner",handle).CornerRadius=UDim.new(0,10)
+local handle = Instance.new("Frame", bar)
+handle.Size = UDim2.new(settings.speed/MAX_SPEED,0,1,0)
+handle.BackgroundColor3 = neon
+handle.BorderColor3 = neon
+handle.Active = true
+Instance.new("UICorner", handle).CornerRadius = UDim.new(0,10)
 
-local function setSpeed(val)
-	val=math.clamp(tonumber(val) or settings.speed,1,250)
-	settings.speed=val
-	speedLabel.Text="Speed: "..val
-	speedInput.Text=tostring(val)
-	handle.Size=UDim2.new(val/250,0,1,0)
-	if settings.speedEnabled then
-		local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-		if h then h.WalkSpeed=val end
-	end
+local function setSpeed(v)
+    v = tonumber(v) or settings.speed
+    settings.speed = math.clamp(v,1,MAX_SPEED)
+    speedLbl.Text = "Speed: " .. settings.speed
+    speedInput.Text = tostring(settings.speed)
+    handle.Size = UDim2.new(settings.speed/MAX_SPEED,0,1,0)
+    if settings.speedEnabled then
+        local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if h then h.WalkSpeed = settings.speed end
+    end
 end
 
 speedInput.FocusLost:Connect(function() setSpeed(speedInput.Text) end)
-bar.InputBegan:Connect(function(i)
-	if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then
-		local rel=(i.Position.X-bar.AbsolutePosition.X)/bar.AbsoluteSize.X
-		setSpeed(1+math.floor( (rel>1 and 1 or rel<0 and 0 or rel)*(250-1) ))
-	end
-end)
 
-local draggingSlider=false
+local draggingSlider = false
+bar.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingSlider = true
+    end
+end)
+bar.InputEnded:Connect(function() draggingSlider = false end)
 handle.InputBegan:Connect(function(i)
-	if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=true end
+    if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingSlider = true
+    end
 end)
 handle.InputEnded:Connect(function(i)
-	if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=false end
+    if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingSlider = false
+    end
 end)
+
 UIS.InputChanged:Connect(function(i)
-	if draggingSlider then
-		local rel=(i.Position.X-bar.AbsolutePosition.X)/bar.AbsoluteSize.X
-		setSpeed(1+math.floor( (rel>1 and 1 or rel<0 and 0 or rel)*(250-1) ))
-	end
+    if draggingSlider then
+        local rel = math.clamp((i.Position.X - bar.AbsolutePosition.X)/bar.AbsoluteSize.X,0,1)
+        setSpeed(1 + math.floor(rel*(MAX_SPEED-1)))
+    end
 end)
 
 icon.MouseButton1Click:Connect(function()
-	menu.Position=center(340,370); menu.Visible=true; icon.Visible=false
+    menu.Position = center(340,380)
+    menu.Visible = true
+    icon.Visible = false
 end)
-closeBtn.MouseButton1Click:Connect(function()
-	menu.Visible=false; icon.Position=UDim2.new(1,-60,0.5,-25); icon.Visible=true
+close.MouseButton1Click:Connect(function()
+    menu.Visible = false
+    icon.Position = UDim2.new(1,-60,0.5,-25)
+    icon.Visible = true
+    TS:SetTeleportData(settings)
 end)
 
 UIS.JumpRequest:Connect(function()
-	if settings.infJump then
-		local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-		if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end
-	end
+    if settings.infJump then
+        local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end
+    end
 end)
 
 RS.Stepped:Connect(function()
-	local char=player.Character
-	if not char then return end
-	local h=char:FindFirstChildOfClass("Humanoid")
-	local root=char:FindFirstChild("HumanoidRootPart")
-
-	if settings.god and h then
-		h.Health=h.MaxHealth; h:SetStateEnabled(Enum.HumanoidStateType.Dead,false)
-	end
-
-	if root and root.Position.Y<workspace.FallenPartsDestroyHeight then
-		root.CFrame=CFrame.new(0,10,0); if h then h.Health=h.MaxHealth end
-	end
-
-	if settings.noclip then
-		for _,p in pairs(char:GetDescendants()) do
-			if p:IsA("BasePart") then p.CanCollide=false end
-		end
-	else
-		for _,p in pairs(char:GetDescendants()) do
-			if p:IsA("BasePart") then p.CanCollide=true end
-		end
-	end
-
-	local h2=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-	if h2 and settings.speedEnabled then h2.WalkSpeed=settings.speed end
+    local c = player.Character
+    if not c then return end
+    local h = c:FindFirstChildOfClass("Humanoid")
+    local root = c:FindFirstChild("HumanoidRootPart")
+    if settings.god and h then
+        h.Health = h.MaxHealth
+        h:SetStateEnabled(Enum.HumanoidStateType.Dead,false)
+    end
+    if root and root.Position.Y < workspace.FallenPartsDestroyHeight then
+        root.CFrame = CFrame.new(0,10,0)
+        if h then h.Health = h.MaxHealth end
+    end
+    if settings.noclip then
+        for _,p in pairs(c:GetDescendants()) do
+            if p:IsA("BasePart") then p.CanCollide = false end
+        end
+    else
+        for _,p in pairs(c:GetDescendants()) do
+            if p:IsA("BasePart") then p.CanCollide = true end
+        end
+    end
+    if h and settings.speedEnabled then
+        h.WalkSpeed = settings.speed
+    end
 end)
 
 player.CharacterAdded:Connect(function(c)
-	c:WaitForChild("Humanoid").WalkSpeed=settings.speed
+    c:WaitForChild("Humanoid").WalkSpeed = settings.speed
 end)
 
-local function save()
-	TS:SetTeleportData(settings)
-end
-
-closeBtn.MouseButton1Click:Connect(save)
-icon.MouseButton1Click:Connect(save)
-game:BindToClose(save)
+game:BindToClose(function()
+    TS:SetTeleportData(settings)
+end)
 
 setSpeed(settings.speed)
